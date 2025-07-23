@@ -1,0 +1,12 @@
+[
+  {
+    "id": "bad_id",
+    "username": "",
+    "firstName": "",
+    "lastName": "",
+    "email": "not-an-email",
+    "password": "",
+    "phone": "not-a-phone",
+    "userStatus": "invalid"
+  }
+]

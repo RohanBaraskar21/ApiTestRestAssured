@@ -1,0 +1,8 @@
+{
+  "id": "bad_id",
+  "petId": null,
+  "quantity": -1,
+  "shipDate": "invalid-date",
+  "status": "unknown",
+  "complete": false
+}

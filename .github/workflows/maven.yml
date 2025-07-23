@@ -28,6 +28,7 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
 
     - name: Build with Maven
+      id: maven_build
       run: mvn -B clean verify
       continue-on-error: true
 
@@ -44,3 +45,7 @@ jobs:
       with:
         name: extent-report
         path: target/ExtentReports/ExtentReport.html
+
+    - name: Fail job if Maven failed
+      if: steps.maven_build.outcome == 'failure'
+      run: exit 1

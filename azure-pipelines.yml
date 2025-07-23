@@ -1,0 +1,36 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- checkout: self
+
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $javaHome = $env:JAVA_HOME_17_X64
+      echo "##vso[task.setvariable variable=JAVA_HOME]$javaHome"
+      echo "##vso[task.setvariable variable=PATH]$javaHome\bin;$env:PATH"
+
+- script: |
+    mvn -B clean verify
+  displayName: 'Build with Maven'
+  continueOnError: 'true'
+  name: mavenBuild
+
+- publish: 'target/allure-results'
+  artifact: allure-results
+  condition: always()
+
+- publish: 'target/ExtentReports/ExtentReport.html'
+  artifact: extent-report
+  condition: always()
+
+- script: |
+    echo "##[error] Maven build failed"
+    exit 1
+  displayName: 'Fail job if Maven failed'
+  condition: and(always(), eq(variables['mavenBuild.status'], 'Failed'))

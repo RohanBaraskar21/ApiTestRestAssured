@@ -29,6 +29,15 @@ steps:
   artifact: extent-report
   condition: always()
 
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+    mergeTestResults: true
+    testRunTitle: 'Petstore API Tests'
+  condition: always()
+
 - script: |
     echo "##[error] Maven build failed"
     exit 1

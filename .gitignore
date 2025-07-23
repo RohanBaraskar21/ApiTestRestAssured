@@ -20,9 +20,6 @@ Thumbs.db
 # VS Code
 .vscode/
 
-# GitHub Actions
-/.github/*/maven.yml
-
 # Others
 *.swp
 *.bak

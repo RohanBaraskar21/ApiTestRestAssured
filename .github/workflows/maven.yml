@@ -45,6 +45,7 @@ jobs:
       with:
         name: extent-report
         path: target/ExtentReports/ExtentReport.html
+        if-no-files-found: ignore
 
     - name: Fail job if Maven failed
       if: steps.maven_build.outcome == 'failure'

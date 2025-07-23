@@ -1,0 +1,30 @@
+# Java/Maven
+/target/
+/.idea/
+/.vscode/
+*.iml
+*.class
+*.log
+*.tmp
+.DS_Store
+
+# Reports and results
+/allure-results/
+/allure-report/
+/ExtentReports/
+*.html
+
+# OS files
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# GitHub Actions
+/.github/*/maven.yml
+
+# Others
+*.swp
+*.bak
+*.orig
+*.rej

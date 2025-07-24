@@ -1,5 +1,6 @@
 package com.petstore.user;
 
+import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import com.petstore.utils.ExtentBaseTest;
 import org.testng.Assert;
@@ -21,37 +22,116 @@ public class UserApiTests extends ExtentBaseTest {
 
     @Test
     public void testCreateUserNegative() throws Exception {
-        Response response = ApiHelper.post(BASE_URL + "/user", DATA_PATH + "create-user-negative.json");
-        Assert.assertTrue(response.getStatusCode() >= 400);
+        org.json.JSONObject invalidJson = new org.json.JSONObject();
+        String url = BASE_URL + "/user";
+        String body = invalidJson.toString();
+        System.out.println("[DEBUG] POST " + url);
+        System.out.println("[DEBUG] Body: " + body);
+        Response response = RestAssured.given()
+            .contentType("application/json")
+            .body(body)
+            .post(url);
+        System.out.println("[DEBUG] Response: " + response.asString());
+        Assert.assertTrue(response.getStatusCode() >= 400, "Expected error status but got " + response.getStatusCode());
     }
 
     @Test
     public void testCreateUsersWithArrayPositive() throws Exception {
-        Response response = ApiHelper.post(BASE_URL + "/user/createWithArray", DATA_PATH + "create-users-array-positive.json");
+        // Create array of users with dynamic usernames
+        org.json.JSONArray users = new org.json.JSONArray();
+        for (int i = 0; i < 2; i++) {
+            org.json.JSONObject user = new org.json.JSONObject();
+            user.put("id", 10000 + i);
+            user.put("username", "user_array_" + System.currentTimeMillis() + i);
+            user.put("firstName", "First" + i);
+            user.put("lastName", "Last" + i);
+            user.put("email", "user_array_" + i + "@test.com");
+            user.put("password", "pass123");
+            user.put("phone", "1234567890");
+            user.put("userStatus", 1);
+            users.put(user);
+        }
+        Response response = RestAssured.given()
+            .contentType("application/json")
+            .body(users.toString())
+            .post(BASE_URL + "/user/createWithArray");
         Assert.assertEquals(response.getStatusCode(), 200);
     }
 
     @Test
     public void testCreateUsersWithArrayNegative() throws Exception {
-        Response response = ApiHelper.post(BASE_URL + "/user/createWithArray", DATA_PATH + "create-users-array-negative.json");
-        Assert.assertTrue(response.getStatusCode() >= 400);
+        org.json.JSONArray invalidUsers = new org.json.JSONArray();
+        invalidUsers.put(new org.json.JSONObject()); // Empty user
+        String url = BASE_URL + "/user/createWithArray";
+        String body = invalidUsers.toString();
+        System.out.println("[DEBUG] POST " + url);
+        System.out.println("[DEBUG] Body: " + body);
+        Response response = RestAssured.given()
+            .contentType("application/json")
+            .body(body)
+            .post(url);
+        System.out.println("[DEBUG] Response: " + response.asString());
+        Assert.assertTrue(response.getStatusCode() >= 400, "Expected error status but got " + response.getStatusCode());
     }
 
     @Test
     public void testCreateUsersWithListPositive() throws Exception {
-        Response response = ApiHelper.post(BASE_URL + "/user/createWithList", DATA_PATH + "create-users-list-positive.json");
+        // Create list of users with dynamic usernames
+        org.json.JSONArray users = new org.json.JSONArray();
+        for (int i = 0; i < 2; i++) {
+            org.json.JSONObject user = new org.json.JSONObject();
+            user.put("id", 20000 + i);
+            user.put("username", "user_list_" + System.currentTimeMillis() + i);
+            user.put("firstName", "First" + i);
+            user.put("lastName", "Last" + i);
+            user.put("email", "user_list_" + i + "@test.com");
+            user.put("password", "pass123");
+            user.put("phone", "1234567890");
+            user.put("userStatus", 1);
+            users.put(user);
+        }
+        Response response = RestAssured.given()
+            .contentType("application/json")
+            .body(users.toString())
+            .post(BASE_URL + "/user/createWithList");
         Assert.assertEquals(response.getStatusCode(), 200);
     }
 
     @Test
     public void testCreateUsersWithListNegative() throws Exception {
-        Response response = ApiHelper.post(BASE_URL + "/user/createWithList", DATA_PATH + "create-users-list-negative.json");
-        Assert.assertTrue(response.getStatusCode() >= 400);
+        org.json.JSONArray invalidUsers = new org.json.JSONArray();
+        invalidUsers.put(new org.json.JSONObject()); // Empty user
+        String url = BASE_URL + "/user/createWithList";
+        String body = invalidUsers.toString();
+        System.out.println("[DEBUG] POST " + url);
+        System.out.println("[DEBUG] Body: " + body);
+        Response response = RestAssured.given()
+            .contentType("application/json")
+            .body(body)
+            .post(url);
+        System.out.println("[DEBUG] Response: " + response.asString());
+        Assert.assertTrue(response.getStatusCode() >= 400, "Expected error status but got " + response.getStatusCode());
     }
 
     @Test
-    public void testGetUserByUsernamePositive() {
-        String username = "johndoe";
+    public void testGetUserByUsernamePositive() throws Exception {
+        // Create a user first
+        org.json.JSONObject user = new org.json.JSONObject();
+        String username = "user_get_" + System.currentTimeMillis();
+        user.put("id", 30000);
+        user.put("username", username);
+        user.put("firstName", "First");
+        user.put("lastName", "Last");
+        user.put("email", "getuser@test.com");
+        user.put("password", "pass123");
+        user.put("phone", "1234567890");
+        user.put("userStatus", 1);
+        Response createResponse = RestAssured.given()
+            .contentType("application/json")
+            .body(user.toString())
+            .post(BASE_URL + "/user");
+        Assert.assertEquals(createResponse.getStatusCode(), 200);
+        // Get the same user
         Response response = ApiHelper.get(BASE_URL + "/user/" + username);
         Assert.assertEquals(response.getStatusCode(), 200);
         // Optionally validate schema
@@ -60,7 +140,10 @@ public class UserApiTests extends ExtentBaseTest {
     @Test
     public void testGetUserByUsernameNegative() {
         String username = "invaliduser";
-        Response response = ApiHelper.get(BASE_URL + "/user/" + username);
+        String url = BASE_URL + "/user/" + username;
+        System.out.println("[DEBUG] GET " + url);
+        Response response = ApiHelper.get(url);
+        System.out.println("[DEBUG] Response: " + response.asString());
         Assert.assertTrue(response.getStatusCode() >= 400);
     }
 
@@ -74,7 +157,10 @@ public class UserApiTests extends ExtentBaseTest {
     @Test
     public void testUpdateUserNegative() throws Exception {
         String username = "invaliduser";
-        Response response = ApiHelper.put(BASE_URL + "/user/" + username, DATA_PATH + "update-user-negative.json");
+        String url = BASE_URL + "/user/" + username;
+        System.out.println("[DEBUG] PUT " + url);
+        Response response = ApiHelper.put(url, DATA_PATH + "update-user-negative.json");
+        System.out.println("[DEBUG] Response: " + response.asString());
         Assert.assertTrue(response.getStatusCode() >= 400);
     }
 
@@ -86,7 +172,10 @@ public class UserApiTests extends ExtentBaseTest {
 
     @Test
     public void testLoginUserNegative() {
-        Response response = ApiHelper.get(BASE_URL + "/user/login?username=invaliduser&password=wrongpassword");
+        String url = BASE_URL + "/user/login?username=invaliduser&password=wrongpassword";
+        System.out.println("[DEBUG] GET " + url);
+        Response response = ApiHelper.get(url);
+        System.out.println("[DEBUG] Response: " + response.asString());
         Assert.assertTrue(response.getStatusCode() >= 400);
     }
 
@@ -106,7 +195,10 @@ public class UserApiTests extends ExtentBaseTest {
     @Test
     public void testDeleteUserNegative() {
         String username = "invaliduser";
-        Response response = ApiHelper.delete(BASE_URL + "/user/" + username);
+        String url = BASE_URL + "/user/" + username;
+        System.out.println("[DEBUG] DELETE " + url);
+        Response response = ApiHelper.delete(url);
+        System.out.println("[DEBUG] Response: " + response.asString());
         Assert.assertTrue(response.getStatusCode() >= 400);
     }
 }

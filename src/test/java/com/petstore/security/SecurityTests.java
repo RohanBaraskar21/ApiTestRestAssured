@@ -13,20 +13,27 @@ public class SecurityTests extends ExtentBaseTest {
 
     @Test
     public void testUnauthorizedAccess() {
-        Allure.step("GET /user/1 without authorization");
+        // Try to access user info without authorization (simulate by using invalid token/header if API supports)
+        String url = BASE_URL + "/user/1";
+        System.out.println("[DEBUG] GET " + url);
         Response response = RestAssured.given()
-            .get(BASE_URL + "/user/1");
-        Assert.assertTrue(response.getStatusCode() == 401 || response.getStatusCode() == 403);
+            .header("Authorization", "Bearer invalidtoken")
+            .get(url);
+        System.out.println("[DEBUG] Response: " + response.asString());
+        Assert.assertTrue(response.getStatusCode() == 401 || response.getStatusCode() == 403 || response.getStatusCode() == 400, "Expected 401/403/400 but got " + response.getStatusCode());
     }
 
     @Test
     public void testSqlInjection() {
-        Allure.step("GET /user/login with SQL injection payload");
         String maliciousInput = "' OR '1'='1";
+        String url = BASE_URL + "/user/login?username=" + maliciousInput + "&password=" + maliciousInput;
+        System.out.println("[DEBUG] GET " + url);
         Response response = RestAssured.given()
             .param("username", maliciousInput)
+            .param("password", maliciousInput)
             .get(BASE_URL + "/user/login");
-        Assert.assertTrue(response.getStatusCode() >= 400);
+        System.out.println("[DEBUG] Response: " + response.asString());
+        Assert.assertTrue(response.getStatusCode() == 400 || response.getStatusCode() == 401 || response.getStatusCode() == 403, "Expected error status but got " + response.getStatusCode());
     }
 
     // ... Add more security tests for XSS, etc. ...

@@ -56,16 +56,19 @@ public class PetApiTests extends ExtentBaseTest {
 
     @Test
     public void testUpdatePetNegative() throws Exception {
-        // Try to update a non-existent pet with invalid data
-        org.json.JSONObject updateJson = new org.json.JSONObject();
-        updateJson.put("id", -1); // Invalid ID
+        // Create a pet first
+        Response createResponse = ApiHelper.post(BASE_URL + "/pet", DATA_PATH + "add-pet-positive.json");
+        Assert.assertEquals(createResponse.getStatusCode(), 200);
+        int petId = createResponse.jsonPath().getInt("id");
+        // Use invalid or incomplete pet JSON for negative test
+        org.json.JSONObject updateJson = new org.json.JSONObject(new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(DATA_PATH + "update-pet-negative.json"))));
+        updateJson.put("id", petId);
         String url = BASE_URL + "/pet";
-        String body = updateJson.toString();
         test.info("[REQUEST] PUT " + url);
-        test.info("[REQUEST BODY] " + body);
+        test.info("[REQUEST BODY] " + updateJson.toString());
         Response response = RestAssured.given()
             .contentType("application/json")
-            .body(body)
+            .body(updateJson.toString())
             .put(url);
         test.info("[RESPONSE] " + response.asString());
         try {
@@ -98,8 +101,16 @@ public class PetApiTests extends ExtentBaseTest {
     @Test
     public void testGetPetByIdNegative() {
         int invalidId = -1;
-        Response response = ApiHelper.get(BASE_URL + "/pet/" + invalidId);
-        Assert.assertTrue(response.getStatusCode() == 404 || response.getStatusCode() == 400, "Expected 404 or 400 but got " + response.getStatusCode());
+        String url = BASE_URL + "/pet/" + invalidId;
+        test.info("[REQUEST] GET " + url);
+        Response response = ApiHelper.get(url);
+        test.info("[RESPONSE] " + response.asString());
+        try {
+            Assert.assertTrue(response.getStatusCode() == 404 || response.getStatusCode() == 400, "Expected 404 or 400 but got " + response.getStatusCode());
+        } catch (AssertionError e) {
+            test.fail("Assertion failed: Expected 404 or 400 but got " + response.getStatusCode());
+            throw e;
+        }
     }
 
     @Test

@@ -37,14 +37,19 @@ public class StoreApiTests extends ExtentBaseTest {
         org.json.JSONObject invalidOrder = new org.json.JSONObject();
         String url = BASE_URL + "/store/order";
         String body = invalidOrder.toString();
-        System.out.println("[DEBUG] POST " + url);
-        System.out.println("[DEBUG] Body: " + body);
+        test.info("[REQUEST] POST " + url);
+        test.info("[REQUEST BODY] " + body);
         Response response = RestAssured.given()
             .contentType("application/json")
             .body(body)
             .post(url);
-        System.out.println("[DEBUG] Response: " + response.asString());
-        Assert.assertTrue(response.getStatusCode() >= 400, "Expected error status but got " + response.getStatusCode());
+        test.info("[RESPONSE] " + response.asString());
+        try {
+            Assert.assertTrue(response.getStatusCode() >= 400, "Expected error status but got " + response.getStatusCode());
+        } catch (AssertionError e) {
+            test.fail("Assertion failed: Expected error status but got " + response.getStatusCode());
+            throw e;
+        }
     }
 
     @Test
@@ -73,10 +78,15 @@ public class StoreApiTests extends ExtentBaseTest {
     public void testGetOrderByIdNegative() {
         int invalidId = -1;
         String url = BASE_URL + "/store/order/" + invalidId;
-        System.out.println("[DEBUG] GET " + url);
+        test.info("[REQUEST] GET " + url);
         Response response = ApiHelper.get(url);
-        System.out.println("[DEBUG] Response: " + response.asString());
-        Assert.assertTrue(response.getStatusCode() == 404 || response.getStatusCode() == 400, "Expected 404 or 400 but got " + response.getStatusCode());
+        test.info("[RESPONSE] " + response.asString());
+        try {
+            Assert.assertTrue(response.getStatusCode() == 404 || response.getStatusCode() == 400, "Expected 404 or 400 but got " + response.getStatusCode());
+        } catch (AssertionError e) {
+            test.fail("Assertion failed: Expected 404 or 400 but got " + response.getStatusCode());
+            throw e;
+        }
     }
 
     @Test
@@ -104,9 +114,14 @@ public class StoreApiTests extends ExtentBaseTest {
     public void testDeleteOrderNegative() {
         int invalidId = -1;
         String url = BASE_URL + "/store/order/" + invalidId;
-        System.out.println("[DEBUG] DELETE " + url);
+        test.info("[REQUEST] DELETE " + url);
         Response response = ApiHelper.delete(url);
-        System.out.println("[DEBUG] Response: " + response.asString());
-        Assert.assertTrue(response.getStatusCode() == 404 || response.getStatusCode() == 400, "Expected 404 or 400 but got " + response.getStatusCode());
+        test.info("[RESPONSE] " + response.asString());
+        try {
+            Assert.assertTrue(response.getStatusCode() == 404 || response.getStatusCode() == 400, "Expected 404 or 400 but got " + response.getStatusCode());
+        } catch (AssertionError e) {
+            test.fail("Assertion failed: Expected 404 or 400 but got " + response.getStatusCode());
+            throw e;
+        }
     }
 }

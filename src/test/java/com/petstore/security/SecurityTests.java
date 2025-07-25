@@ -15,25 +15,35 @@ public class SecurityTests extends ExtentBaseTest {
     public void testUnauthorizedAccess() {
         // Try to access user info without authorization (simulate by using invalid token/header if API supports)
         String url = BASE_URL + "/user/1";
-        System.out.println("[DEBUG] GET " + url);
+        test.info("[REQUEST] GET " + url);
         Response response = RestAssured.given()
             .header("Authorization", "Bearer invalidtoken")
             .get(url);
-        System.out.println("[DEBUG] Response: " + response.asString());
-        Assert.assertTrue(response.getStatusCode() == 401 || response.getStatusCode() == 403 || response.getStatusCode() == 400, "Expected 401/403/400 but got " + response.getStatusCode());
+        test.info("[RESPONSE] " + response.asString());
+        try {
+            Assert.assertTrue(response.getStatusCode() == 401 || response.getStatusCode() == 403 || response.getStatusCode() == 400, "Expected 401/403/400 but got " + response.getStatusCode());
+        } catch (AssertionError e) {
+            test.fail("Assertion failed: Expected 401/403/400 but got " + response.getStatusCode());
+            throw e;
+        }
     }
 
     @Test
     public void testSqlInjection() {
         String maliciousInput = "' OR '1'='1";
         String url = BASE_URL + "/user/login?username=" + maliciousInput + "&password=" + maliciousInput;
-        System.out.println("[DEBUG] GET " + url);
+        test.info("[REQUEST] GET " + url);
         Response response = RestAssured.given()
             .param("username", maliciousInput)
             .param("password", maliciousInput)
             .get(BASE_URL + "/user/login");
-        System.out.println("[DEBUG] Response: " + response.asString());
-        Assert.assertTrue(response.getStatusCode() == 400 || response.getStatusCode() == 401 || response.getStatusCode() == 403, "Expected error status but got " + response.getStatusCode());
+        test.info("[RESPONSE] " + response.asString());
+        try {
+            Assert.assertTrue(response.getStatusCode() == 400 || response.getStatusCode() == 401 || response.getStatusCode() == 403, "Expected error status but got " + response.getStatusCode());
+        } catch (AssertionError e) {
+            test.fail("Assertion failed: Expected error status but got " + response.getStatusCode());
+            throw e;
+        }
     }
 
     // ... Add more security tests for XSS, etc. ...
